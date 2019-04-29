@@ -33,9 +33,14 @@ default:
 	fprintf(stderr, "Usage: %s [port]\n", argv[0]);
 	exit(1);
 }
-
-/* Create a dgram socket */
-
+/** Trouble shooting **/
+fprintf( stderr, "Communication established on port %i\n", port );
+/* 
+Create a datagram socket 
+	domain: AF_INET (IPv4 Protocol)
+	type: 	SOCK_STREAM: SOCK_DGRAM: UDP(unreliable, connectionless)
+	protocol	0 (IP) 
+*/
 if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
   fprintf(stderr, "Can't create a socket\n");
   exit(1);
@@ -44,9 +49,9 @@ if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 /* Bind an address to the socket */
 
 memset(&server, 0, sizeof(server));
-server.sin_family = AF_INET;
-server.sin_port = htons(port);
-server.sin_addr.s_addr = htonl(INADDR_ANY);
+server.sin_family = AF_INET; 	//AF_INET = ipv4
+server.sin_port = htons(port);  //assigns the port number
+server.sin_addr.s_addr = htonl(INADDR_ANY); //INADDR_ANY = localhost
 if(bind(sd, (struct sockaddr *)&server, sizeof(server)) == -1) {
   fprintf(stderr, "Can't bind name to socket\n");
   exit(1);
