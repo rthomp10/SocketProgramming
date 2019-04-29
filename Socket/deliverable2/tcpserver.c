@@ -19,7 +19,7 @@
 int main(int argc, char **argv)
 {
 
-  int i, n, bytes_to_read;
+  int i, n, bytes_to_read, err, opt = 1;
   int sd, new_sd, client_len, port, hostname;
   struct sockaddr_in server, client;
   char *bp, buf[BUFLEN], tbuf[BUFLEN]="hello";
@@ -44,6 +44,13 @@ int main(int argc, char **argv)
     fprintf(stderr, "ERROR: Can't create a socket\n");
     exit(1);
   }
+  
+  /* socket options */
+  err = setsockopt(sd, SOL_SOCKET, (SO_REUSEPORT|SO_REUSEADDR), &opt, sizeof(int));
+  if(sd<0){
+	  printf("Socket option error\n");
+  }
+	  
   
   /* Bind an address to the socket */
   
@@ -103,8 +110,8 @@ int main(int argc, char **argv)
   for(int i = 2; i < strlen(buf); i++)
   {
 	  printf("(int)buf[%i] = %i   ",i,(int)buf[i]);
-	  printf("(int)buf[2]  = %i   ",i,(int)buf[i]);
-	  printf("buf[2]+%i = %i\n",i,(int)buf[2]+i);
+	  printf("(int)buf[2]  = %i   ",(int)buf[2]);
+	  printf("buf[2]+%i = %i\n",i-2,(int)buf[2]+i-2);
 	  if( (int)buf[i] != (int)buf[2] + i-2 && (int)buf[i] != 10)
 		  strcpy(tempstr, "KO");
   }
