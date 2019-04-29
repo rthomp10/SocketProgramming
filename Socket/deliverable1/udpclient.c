@@ -32,7 +32,6 @@ pname = argv[0];
 argc--;
 argv++;
 
-//Parses the program's input
 if (argc > 0 && (strcmp(*argv, "-s") == 0)) {
   if (--argc > 0 && (data_size = atoi(*++argv))) {
     argc--;
@@ -44,7 +43,6 @@ if (argc > 0 && (strcmp(*argv, "-s") == 0)) {
   }
 }
 
-//Make whatever argument is left the host port #
 if (argc > 0) {
   host = *argv;
   if (--argc > 0) port = atoi(*++argv);
@@ -54,12 +52,11 @@ else {
   exit(1);
 }
 
-/************************************************
-Socket creation 
-SOCK_DGRAM: a connectionles communication port (UDP)
-AF_INET: (IPv4) address family
-0 = IP
-*************************************************/
+
+/* Create a datagram socket */
+//AF_INET: IPv4
+//SOCK_DGRAM: UDP
+
 if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
   fprintf(stderr, "Can't create a socket\n");
   exit(1);
@@ -67,9 +64,9 @@ if ((sd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 
 /* Store server info */
 
-bzero((char *)&server, sizeof(server)); //zeros out server
-server.sin_family = AF_INET; //IPv4
-server.sin_port = htons(port); //assigning port #
+bzero((char *)&server, sizeof(server));
+server.sin_family = AF_INET;
+server.sin_port = htons(port);
 if ((hp = gethostbyname(host)) == NULL) {
   fprintf(stderr, "Can't get server address\n");
   exit(1);
@@ -81,30 +78,18 @@ if (data_size > MAXLEN) {
 }
 
 /* Data */
-for ( i=0; i < data_size; i++ ) {
+for (i=0; i<data_size; i++) {
   j = (i<26) ? i : i%26;
   sbuf[i] = 'a' + j;
 }
+
 gettimeofday(&start, NULL);
 
-/***************************** 
-Transmits a message to another socket
- 
-sendto([socket descriptor], [buffer that has the data],
-       [lenth of the data (bytes)], [flags], 
-       [address of the target socket],[address size(bytes)])
-sd: A descriptor identifying a (possibly connected) socket.
-sbuf: A pointer to a buffer containing the data to be transmitted.
-data_size: The length, in bytes, of the data pointed to by the buf parameter.
-*****************************/
+/* Transmit */
+
 server_len = sizeof(server);
 if (sendto(sd, sbuf, data_size, 0, (struct sockaddr *)&server, server_len) == -1) {
   fprintf(stderr, "sendto error\n");
-  fprintf(stderr, "Socket Descr. 	== %i\n", sd);
-  fprintf(stderr, "Buffer Loc. 	== %i\n", sbuf);
-  fprintf(stderr, "data_size 	== %i\n", data_size);
-  fprintf(stderr, "socket address	== %i\n", (struct sockaddr *)&server);
-  fprintf(stderr, "server_len 	== %i\n", server_len);
   exit(1);
 }
 
@@ -113,7 +98,9 @@ if (recvfrom(sd, rbuf, MAXLEN, 0, (struct sockaddr *)&server, &server_len) < 0) 
   fprintf(stderr, "recvfrom error\n");
   exit(1);
 }
+printf( "Server response: %s\n", rbuf );
 
+//Round trip calculation and output
 gettimeofday(&end, NULL);
 printf("Round trip delay: %ld ms.\n", delay(start,end));
 
